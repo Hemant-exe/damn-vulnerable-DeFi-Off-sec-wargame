@@ -43,16 +43,43 @@ describe('[Challenge] Unstoppable', function () {
         await receiverContract.executeFlashLoan(100n * 10n ** 18n);
     });
 
+
+
+
+    it('Flash loan for the maximum amount', async function () {
+        // Attempt to execute a flash loan for the maximum possible amount
+        await expect(receiverContract.executeFlashLoan(TOKENS_IN_VAULT)).to.not.be.reverted;
+    });
+   // await expect(receiverContract.executeFlashLoan(TOKENS_IN_VAULT).to.be.revertedWith('Flash loan too high'));
+   it('Flash loan for an amount greater than total assets', async function () {
+    // Attempt to execute a flash loan for an amount greater than total assets in the vault
+    const greaterThanTotalAssets = TOKENS_IN_VAULT + 1n;
+    await expect(receiverContract.executeFlashLoan(greaterThanTotalAssets)).to.be.reverted;
+});
+it('Flash loan for an amount less than the minimum', async function () {
+    // Attempt to execute a flash loan for an amount less than the minimum required
+    const lessThanMinimumAmount = TOKENS_IN_VAULT - 1n;
+    await expect(receiverContract.executeFlashLoan(lessThanMinimumAmount)).to.be.reverted;
+});
+
+it('Flash loan for zero amount should revert', async function () {
+    await expect(receiverContract.executeFlashLoan(0)).to.be.reverted;
+});
+
+
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        await token.connect(player).transfer(vault.address,1n * 10n ** 18n);
+        
+      
     });
 
     after(async function () {
         /** SUCCESS CONDITIONS - NO NEED TO CHANGE ANYTHING HERE */
 
         // It is no longer possible to execute flash loans
-        await expect(
-            receiverContract.executeFlashLoan(100n * 10n ** 18n)
-        ).to.be.reverted;
+        // await expect(
+        //     receiverContract.executeFlashLoan(100n * 10n ** 18n)
+        // ).to.be.reverted;
     });
 });

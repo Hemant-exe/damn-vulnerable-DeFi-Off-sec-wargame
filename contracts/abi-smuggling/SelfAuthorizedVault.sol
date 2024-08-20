@@ -36,7 +36,7 @@ contract SelfAuthorizedVault is AuthorizedExecutor {
     function withdraw(address token, address recipient, uint256 amount) external onlyThis {
         if (amount > WITHDRAWAL_LIMIT) {
             revert InvalidWithdrawalAmount();
-        }
+        }   
 
         if (block.timestamp <= _lastWithdrawalTimestamp + WAITING_PERIOD) {
             revert WithdrawalWaitingPeriodNotEnded();

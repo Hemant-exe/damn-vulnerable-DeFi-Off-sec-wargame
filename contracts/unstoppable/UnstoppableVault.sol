@@ -31,6 +31,7 @@ contract UnstoppableVault is IERC3156FlashLender, ReentrancyGuard, Owned, ERC462
 
     constructor(ERC20 _token, address _owner, address _feeRecipient)
         ERC4626(_token, "Oh Damn Valuable Token", "oDVT")
+        
         Owned(_owner)
     {
         feeRecipient = _feeRecipient;
